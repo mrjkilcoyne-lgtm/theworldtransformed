@@ -69,6 +69,25 @@ So people can raise kids in peace.
 
 ---
 
+## The Brunel Engine
+
+**Turn frustrations into actionable insight** through AI-powered structured interviews.
+
+The Brunel Engine is now live on this site at `/brunel`. It features:
+- 6-question structured interview flow
+- Three-tier analysis (Basic/Standard/Council)
+- AI report generation using Claude
+- Stripe payment processing
+- Email follow-up system
+
+**Try it:** Visit `/brunel` on the live site
+
+**Documentation:**
+- [Setup Guide](./BRUNEL_SETUP.md) - Technical implementation details
+- [Deployment Guide](./DEPLOY.md) - How to deploy to production
+
+---
+
 ## Development
 
 This site is built with [Astro](https://astro.build) and follows modern development best practices.
@@ -79,6 +98,9 @@ This site is built with [Astro](https://astro.build) and follows modern developm
 # Install dependencies
 npm install
 
+# Configure environment (copy .env.example to .env and add API keys)
+cp .env.example .env
+
 # Start development server
 npm run dev
 
@@ -88,6 +110,15 @@ npm run build
 # Preview production build
 npm run preview
 ```
+
+### Deploy to Production
+
+**Fastest way:**
+```bash
+./deploy.sh
+```
+
+Or see [DEPLOY.md](./DEPLOY.md) for detailed deployment options (Vercel, Netlify, self-hosted).
 
 ### Development Workflow
 

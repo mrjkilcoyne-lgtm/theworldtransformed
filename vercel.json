@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "astro",
+  "regions": ["lhr1"],
+  "env": {
+    "ANTHROPIC_API_KEY": "@anthropic-api-key",
+    "STRIPE_SECRET_KEY": "@stripe-secret-key",
+    "STRIPE_PUBLISHABLE_KEY": "@stripe-publishable-key",
+    "PUBLIC_SITE_URL": "https://theworldtransformed.org"
+  }
+}
