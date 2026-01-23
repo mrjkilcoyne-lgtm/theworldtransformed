@@ -1,10 +1,10 @@
 import { defineConfig } from 'astro/config';
 import mdx from '@astrojs/mdx';
-import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-    site: 'https://theworldtransformed.org',
-    integrations: [mdx(), sitemap()],
+    site: 'https://mrjkilcoyne-lgtm.github.io',
+    base: '/theworldtransformed',
+    integrations: [mdx()],
     markdown: {
           shikiConfig: {
                   theme: 'github-dark'
