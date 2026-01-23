@@ -1,0 +1,156 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = "Matt Kilcoyne - Economics, Policy, and Technology" } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content={description}>
+  <meta name="generator" content={Astro.generator}>
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:type" content="website">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:creator" content="@MattKilcoyne">
+  <meta name="twitter:title" content={title}>
+  <meta name="twitter:description" content={description}>
+
+  <title>{title} | The World Transformed</title>
+
+  <link rel="sitemap" href="/sitemap-index.xml">
+</head>
+<body>
+  <header>
+    <nav>
+      <a href="/" class="logo">The World Transformed</a>
+      <div class="nav-links">
+        <a href="/blog">Writing</a>
+        <a href="/about">About</a>
+        <a href="/brunel">Brunel Engine</a>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <slot />
+  </main>
+
+  <footer>
+    <p>&copy; {new Date().getFullYear()} Matt Kilcoyne. All rights reserved.</p>
+    <p>
+      <a href="https://twitter.com/MattKilcoyne" target="_blank" rel="noopener noreferrer">Twitter</a> |
+      <a href="https://datainnovation.org/author/mkilcoyne/" target="_blank" rel="noopener noreferrer">Professional Work</a>
+    </p>
+  </footer>
+</body>
+</html>
+
+<style>
+  :root {
+    --color-bg: #0d1117;
+    --color-text: #c9d1d9;
+    --color-accent: #58a6ff;
+    --color-border: #30363d;
+    --max-width: 800px;
+    --spacing: 1rem;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    background-color: var(--color-bg);
+    color: var(--color-text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    line-height: 1.6;
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--spacing);
+  }
+
+  nav {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .logo {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text);
+    text-decoration: none;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.5rem;
+  }
+
+  .nav-links a {
+    color: var(--color-text);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover {
+    color: var(--color-accent);
+  }
+
+  main {
+    flex: 1;
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 2rem var(--spacing);
+    width: 100%;
+  }
+
+  footer {
+    border-top: 1px solid var(--color-border);
+    padding: 2rem var(--spacing);
+    text-align: center;
+    font-size: 0.875rem;
+    color: #8b949e;
+  }
+
+  footer a {
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    nav {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

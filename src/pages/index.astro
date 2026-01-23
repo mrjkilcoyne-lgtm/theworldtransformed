@@ -1,0 +1,156 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Home">
+  <article class="hero">
+    <h1>The World Transformed</h1>
+    <p class="subtitle">Economics, Policy, and Coordination Mechanisms</p>
+
+    <section class="intro">
+      <p>
+        Matt Kilcoyne. Policy analyst at the Center for Data Innovation and ITIF.
+        Based in London. Navigator of possibility space.
+      </p>
+    </section>
+
+    <section class="focus-areas">
+      <h2>Focus Areas</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Economics</h3>
+          <p>Institutional economics, Austrian school, market-oriented policy analysis</p>
+        </div>
+
+        <div class="card">
+          <h3>Technology Policy</h3>
+          <p>AI governance, digital sovereignty, EU regulation (DMA, DSA, AI Act)</p>
+        </div>
+
+        <div class="card">
+          <h3>Philosophy</h3>
+          <p>Political philosophy, ethics of technology, coordination problems</p>
+        </div>
+
+        <div class="card">
+          <h3>Coordination Infrastructure</h3>
+          <p>Mechanism design, collective action, rent-seeking analysis</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="current-work">
+      <h2>Current Research</h2>
+      <ul>
+        <li>The Babel Navigation Theorem: Formalizing LLMs as possibility space search tools</li>
+        <li>Digital sovereignty critique: Analyzing European tech protectionism</li>
+        <li>Infrastructure economics: How policy creates or eliminates rent-seeking</li>
+      </ul>
+    </section>
+
+    <section class="principles">
+      <h2>Guiding Principles</h2>
+      <ol>
+        <li>Navigation beats prediction</li>
+        <li>Follow the money</li>
+        <li>People should be able to raise kids in peace</li>
+        <li>All in this together, to the stars and new dimensions</li>
+      </ol>
+    </section>
+
+    <section class="tools">
+      <h2>Tools</h2>
+      <p>
+        <a href="/brunel" class="button">The Brunel Engine</a> -
+        Turn frustrations into actionable insight through structured interviews.
+      </p>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: 2rem 0;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: #58a6ff;
+  }
+
+  .subtitle {
+    font-size: 1.25rem;
+    color: #8b949e;
+    margin-bottom: 2rem;
+  }
+
+  section {
+    margin: 3rem 0;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+    color: #c9d1d9;
+  }
+
+  h3 {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    color: #58a6ff;
+  }
+
+  .intro {
+    font-size: 1.125rem;
+    line-height: 1.8;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .card {
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 1.5rem;
+    background: #161b22;
+  }
+
+  ul, ol {
+    margin-left: 1.5rem;
+    line-height: 1.8;
+  }
+
+  li {
+    margin: 0.5rem 0;
+  }
+
+  .button {
+    display: inline-block;
+    background: #238636;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background 0.2s;
+  }
+
+  .button:hover {
+    background: #2ea043;
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 2rem;
+    }
+
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

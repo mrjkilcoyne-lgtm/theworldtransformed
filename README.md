@@ -66,3 +66,61 @@ So people can raise kids in peace.
 ## Contact
 
 [matt@claimour.com] | [@mrjkilcoyne](https://twitter.com/mrjkilcoyne)
+
+---
+
+## Development
+
+This site is built with [Astro](https://astro.build) and follows modern development best practices.
+
+### Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+```
+
+### Development Workflow
+
+```bash
+# Run tests
+npm test                  # Run once
+npm run test:watch        # Watch mode
+npm run test:coverage     # With coverage
+
+# Code quality
+npm run lint              # Check linting
+npm run lint:fix          # Fix linting issues
+npm run format            # Format code
+npm run type-check        # TypeScript checking
+
+# Full check (runs before commits)
+npm run check             # Run all checks
+```
+
+### Project Structure
+
+See [CLAUDE.md](./CLAUDE.md) for detailed project documentation, including:
+- Architecture and conventions
+- Development patterns
+- Common workflows
+- Custom Claude Code commands
+
+### Custom Commands
+
+This project includes custom Claude Code slash commands for common workflows:
+- `/new-post` - Create new blog posts
+- `/build-check` - Comprehensive build verification
+- `/deploy-check` - Pre-deployment checklist
+- `/policy-analysis` - Structured policy analysis template
+- `/research-plan` - Deep research mode
+- `/brunel-review` - Brunel Engine implementation review
