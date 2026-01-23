@@ -12,8 +12,7 @@
   },
   "dependencies": {
     "astro": "^4.0.0",
-    "@astrojs/mdx": "^2.0.0",
-    "@astrojs/sitemap": "^3.0.0"
+    "@astrojs/mdx": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.10.5",
