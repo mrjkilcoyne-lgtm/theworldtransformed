@@ -1,0 +1,353 @@
+# Clawdbot Monitor — detect and flag suspicious bot-driven PR activity
+#
+# AI bots ("clawdbots") may open PRs that:
+#   - Inject malicious scripts into source or config files
+#   - Add backdoor dependencies via package.json / lock file changes
+#   - Modify GitHub Actions workflows to exfiltrate secrets
+#   - Insert SEO spam, hidden links, or XSS payloads into content
+#   - Tamper with deployment configuration (vercel.json, astro.config)
+#
+# This workflow runs on every PR and flags anything suspicious.
+
+name: Clawdbot Monitor
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  monitor:
+    name: Scan for clawdbot attacks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run clawdbot scan
+        id: scan
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set +e  # don't exit on non-zero — we collect findings
+
+          FINDINGS=""
+          SEVERITY="clean"
+          PR_BASE="${{ github.event.pull_request.base.sha }}"
+          PR_HEAD="${{ github.event.pull_request.head.sha }}"
+
+          # Get list of changed files
+          CHANGED_FILES=$(git diff --name-only "$PR_BASE" "$PR_HEAD" 2>/dev/null || git diff --name-only HEAD~1 HEAD)
+
+          echo "=== Clawdbot Monitor ==="
+          echo "Scanning $(echo "$CHANGED_FILES" | wc -l) changed files..."
+          echo ""
+
+          # ─────────────────────────────────────────────
+          # 1. SENSITIVE FILE CHANGES
+          # ─────────────────────────────────────────────
+          echo "--- Check 1: Sensitive file changes ---"
+
+          WORKFLOW_CHANGES=$(echo "$CHANGED_FILES" | grep -E '\.github/workflows/.*\.ya?ml$' || true)
+          if [ -n "$WORKFLOW_CHANGES" ]; then
+            FINDINGS="$FINDINGS\n🔴 **CRITICAL: GitHub Actions workflow files modified**\n"
+            FINDINGS="$FINDINGS\nWorkflow changes require careful review — bots may inject secret exfiltration or crypto miners.\n"
+            FINDINGS="$FINDINGS\n\`\`\`\n$WORKFLOW_CHANGES\n\`\`\`\n"
+            SEVERITY="critical"
+          fi
+
+          PKG_CHANGES=$(echo "$CHANGED_FILES" | grep -E '^package\.json$|^package-lock\.json$' || true)
+          if [ -n "$PKG_CHANGES" ]; then
+            FINDINGS="$FINDINGS\n🟡 **WARNING: Package manifest changed**\n"
+            FINDINGS="$FINDINGS\nReview dependency changes for supply chain attacks.\n"
+            FINDINGS="$FINDINGS\n\`\`\`\n$PKG_CHANGES\n\`\`\`\n"
+            [ "$SEVERITY" = "clean" ] && SEVERITY="warning"
+          fi
+
+          CONFIG_CHANGES=$(echo "$CHANGED_FILES" | grep -E '^(vercel\.json|astro\.config\.mjs|tsconfig\.json|\.prettierrc|\.gitignore)$' || true)
+          if [ -n "$CONFIG_CHANGES" ]; then
+            FINDINGS="$FINDINGS\n🟡 **WARNING: Project configuration files modified**\n"
+            FINDINGS="$FINDINGS\n\`\`\`\n$CONFIG_CHANGES\n\`\`\`\n"
+            [ "$SEVERITY" = "clean" ] && SEVERITY="warning"
+          fi
+
+          # ─────────────────────────────────────────────
+          # 2. DEPENDENCY TAMPERING
+          # ─────────────────────────────────────────────
+          echo "--- Check 2: Dependency tampering ---"
+
+          if echo "$CHANGED_FILES" | grep -q '^package\.json$'; then
+            # Check for new dependencies added
+            NEW_DEPS=$(git diff "$PR_BASE" "$PR_HEAD" -- package.json 2>/dev/null | grep -E '^\+.*"[^"]+"\s*:\s*"' | grep -v '"name"' | grep -v '"version"' | grep -v '"description"' || true)
+            if [ -n "$NEW_DEPS" ]; then
+              FINDINGS="$FINDINGS\n🟠 **ALERT: New dependencies detected**\n"
+              FINDINGS="$FINDINGS\nVerify these packages exist on npm and are not typosquatting:\n"
+              FINDINGS="$FINDINGS\n\`\`\`diff\n$NEW_DEPS\n\`\`\`\n"
+              [ "$SEVERITY" != "critical" ] && SEVERITY="alert"
+            fi
+
+            # Check for script changes (postinstall hooks are a common attack vector)
+            SCRIPT_CHANGES=$(git diff "$PR_BASE" "$PR_HEAD" -- package.json 2>/dev/null | grep -E '^\+.*"(preinstall|postinstall|preuninstall|postuninstall|prepare|prepublish)"' || true)
+            if [ -n "$SCRIPT_CHANGES" ]; then
+              FINDINGS="$FINDINGS\n🔴 **CRITICAL: Lifecycle script hooks modified**\n"
+              FINDINGS="$FINDINGS\nPostinstall/preinstall hooks are the #1 npm supply chain attack vector.\n"
+              FINDINGS="$FINDINGS\n\`\`\`diff\n$SCRIPT_CHANGES\n\`\`\`\n"
+              SEVERITY="critical"
+            fi
+          fi
+
+          # ─────────────────────────────────────────────
+          # 3. SCRIPT INJECTION SCANNING
+          # ─────────────────────────────────────────────
+          echo "--- Check 3: Script injection patterns ---"
+
+          # Scan changed source files for dangerous patterns
+          SRC_FILES=$(echo "$CHANGED_FILES" | grep -E '\.(astro|ts|tsx|js|jsx|mjs|mdx|html)$' || true)
+
+          if [ -n "$SRC_FILES" ]; then
+            for file in $SRC_FILES; do
+              [ ! -f "$file" ] && continue
+
+              # eval() usage
+              if grep -nE '\beval\s*\(' "$file" > /dev/null 2>&1; then
+                MATCHES=$(grep -nE '\beval\s*\(' "$file")
+                FINDINGS="$FINDINGS\n🔴 **CRITICAL: \`eval()\` detected in \`$file\`**\n"
+                FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                SEVERITY="critical"
+              fi
+
+              # Function constructor (stealth eval)
+              if grep -nE 'new\s+Function\s*\(' "$file" > /dev/null 2>&1; then
+                MATCHES=$(grep -nE 'new\s+Function\s*\(' "$file")
+                FINDINGS="$FINDINGS\n🔴 **CRITICAL: \`new Function()\` (stealth eval) detected in \`$file\`**\n"
+                FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                SEVERITY="critical"
+              fi
+
+              # External fetch/XMLHttpRequest to non-allowlisted domains
+              if grep -nE '(fetch|XMLHttpRequest|axios|http\.get|https\.get)\s*\(' "$file" > /dev/null 2>&1; then
+                MATCHES=$(grep -nE '(fetch|XMLHttpRequest|axios|http\.get|https\.get)\s*\(' "$file")
+                FINDINGS="$FINDINGS\n🟠 **ALERT: Network requests detected in \`$file\`**\n"
+                FINDINGS="$FINDINGS\nVerify these are intentional and point to trusted endpoints:\n"
+                FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                [ "$SEVERITY" != "critical" ] && SEVERITY="alert"
+              fi
+
+              # document.write, innerHTML assignment
+              if grep -nE '(document\.write|\.innerHTML\s*=|\.outerHTML\s*=)' "$file" > /dev/null 2>&1; then
+                MATCHES=$(grep -nE '(document\.write|\.innerHTML\s*=|\.outerHTML\s*=)' "$file")
+                FINDINGS="$FINDINGS\n🟠 **ALERT: DOM manipulation detected in \`$file\`**\n"
+                FINDINGS="$FINDINGS\nPossible XSS vector — review carefully:\n"
+                FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                [ "$SEVERITY" != "critical" ] && SEVERITY="alert"
+              fi
+
+              # Base64 encoded payloads
+              if grep -nE '(atob|btoa|Buffer\.from.*base64)' "$file" > /dev/null 2>&1; then
+                MATCHES=$(grep -nE '(atob|btoa|Buffer\.from.*base64)' "$file")
+                FINDINGS="$FINDINGS\n🟠 **ALERT: Base64 encoding/decoding in \`$file\`**\n"
+                FINDINGS="$FINDINGS\nBots often use base64 to hide malicious payloads:\n"
+                FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                [ "$SEVERITY" != "critical" ] && SEVERITY="alert"
+              fi
+
+              # Crypto mining patterns
+              if grep -niE '(coinhive|cryptonight|monero|stratum\+|coin-?hive|miner\.start)' "$file" > /dev/null 2>&1; then
+                MATCHES=$(grep -niE '(coinhive|cryptonight|monero|stratum\+|coin-?hive|miner\.start)' "$file")
+                FINDINGS="$FINDINGS\n🔴 **CRITICAL: Possible crypto miner in \`$file\`**\n"
+                FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                SEVERITY="critical"
+              fi
+            done
+          fi
+
+          # ─────────────────────────────────────────────
+          # 4. CONTENT INTEGRITY (MDX/HTML)
+          # ─────────────────────────────────────────────
+          echo "--- Check 4: Content integrity ---"
+
+          CONTENT_FILES=$(echo "$CHANGED_FILES" | grep -E '\.(mdx|md|html|astro)$' || true)
+
+          if [ -n "$CONTENT_FILES" ]; then
+            for file in $CONTENT_FILES; do
+              [ ! -f "$file" ] && continue
+
+              # Hidden links (display:none, visibility:hidden, 0px font)
+              if grep -niE '(display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0|opacity\s*:\s*0[^.]|position\s*:\s*absolute.*left\s*:\s*-[0-9]{4,})' "$file" > /dev/null 2>&1; then
+                MATCHES=$(grep -niE '(display\s*:\s*none|visibility\s*:\s*hidden|font-size\s*:\s*0|opacity\s*:\s*0[^.]|position\s*:\s*absolute.*left\s*:\s*-[0-9]{4,})' "$file")
+                FINDINGS="$FINDINGS\n🟠 **ALERT: Hidden content patterns in \`$file\`**\n"
+                FINDINGS="$FINDINGS\nMay be SEO spam or cloaked links:\n"
+                FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                [ "$SEVERITY" != "critical" ] && SEVERITY="alert"
+              fi
+
+              # Suspicious link patterns (gambling, pharma, SEO spam domains)
+              if grep -niE '(casino|poker|viagra|cialis|payday.?loan|crypto.?trading|binary.?option|weight.?loss.?pill|free.?iphone|click.?here.?now)' "$file" > /dev/null 2>&1; then
+                MATCHES=$(grep -niE '(casino|poker|viagra|cialis|payday.?loan|crypto.?trading|binary.?option|weight.?loss.?pill|free.?iphone|click.?here.?now)' "$file")
+                FINDINGS="$FINDINGS\n🔴 **CRITICAL: SEO spam keywords in \`$file\`**\n"
+                FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                SEVERITY="critical"
+              fi
+
+              # Inline script tags in content files (XSS)
+              if grep -niE '<script[^>]*>' "$file" > /dev/null 2>&1; then
+                # Ignore Astro's own script handling in .astro files frontmatter
+                if [[ "$file" != *.astro ]]; then
+                  MATCHES=$(grep -niE '<script[^>]*>' "$file")
+                  FINDINGS="$FINDINGS\n🔴 **CRITICAL: Script tags in content file \`$file\`**\n"
+                  FINDINGS="$FINDINGS\nContent files should not contain raw script tags:\n"
+                  FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                  SEVERITY="critical"
+                fi
+              fi
+
+              # iframe injection
+              if grep -niE '<iframe[^>]*>' "$file" > /dev/null 2>&1; then
+                MATCHES=$(grep -niE '<iframe[^>]*>' "$file")
+                FINDINGS="$FINDINGS\n🟠 **ALERT: iframe detected in \`$file\`**\n"
+                FINDINGS="$FINDINGS\n\`\`\`\n$MATCHES\n\`\`\`\n"
+                [ "$SEVERITY" != "critical" ] && SEVERITY="alert"
+              fi
+            done
+          fi
+
+          # ─────────────────────────────────────────────
+          # 5. WORKFLOW INJECTION PROTECTION
+          # ─────────────────────────────────────────────
+          echo "--- Check 5: Workflow injection ---"
+
+          if [ -n "$WORKFLOW_CHANGES" ]; then
+            for file in $WORKFLOW_CHANGES; do
+              [ ! -f "$file" ] && continue
+
+              # Check for secret exfiltration patterns
+              if grep -nE '(curl|wget|fetch|nc |ncat |python.*http|ruby.*http)' "$file" > /dev/null 2>&1; then
+                if grep -l 'secrets\.' "$file" > /dev/null 2>&1; then
+                  FINDINGS="$FINDINGS\n🔴 **CRITICAL: Possible secret exfiltration in workflow \`$file\`**\n"
+                  FINDINGS="$FINDINGS\nWorkflow uses both network commands AND references secrets.\n"
+                  SEVERITY="critical"
+                fi
+              fi
+
+              # Check for overly permissive permissions
+              if grep -nE 'permissions:\s*(write-all|contents:\s*write)' "$file" > /dev/null 2>&1; then
+                FINDINGS="$FINDINGS\n🟠 **ALERT: Broad permissions in workflow \`$file\`**\n"
+                FINDINGS="$FINDINGS\nWorkflows should use minimum required permissions.\n"
+                [ "$SEVERITY" != "critical" ] && SEVERITY="alert"
+              fi
+
+              # Check for dangerous actions (arbitrary code execution)
+              if grep -nE 'uses:.*run-script|uses:.*exec|uses:.*command' "$file" > /dev/null 2>&1; then
+                FINDINGS="$FINDINGS\n🟠 **ALERT: Script execution action in workflow \`$file\`**\n"
+                [ "$SEVERITY" != "critical" ] && SEVERITY="alert"
+              fi
+            done
+          fi
+
+          # ─────────────────────────────────────────────
+          # 6. BOT PATTERN DETECTION
+          # ─────────────────────────────────────────────
+          echo "--- Check 6: Bot patterns ---"
+
+          # Check PR size (bots often make large, sweeping changes)
+          FILE_COUNT=$(echo "$CHANGED_FILES" | wc -l)
+          if [ "$FILE_COUNT" -gt 50 ]; then
+            FINDINGS="$FINDINGS\n🟡 **WARNING: Large PR ($FILE_COUNT files changed)**\n"
+            FINDINGS="$FINDINGS\nBots sometimes make sweeping changes to overwhelm reviewers.\n"
+            [ "$SEVERITY" = "clean" ] && SEVERITY="warning"
+          fi
+
+          # Check for new executable files
+          NEW_EXECUTABLES=$(echo "$CHANGED_FILES" | grep -E '\.(sh|bash|py|rb|pl|exe|bat|cmd|ps1)$' || true)
+          if [ -n "$NEW_EXECUTABLES" ]; then
+            FINDINGS="$FINDINGS\n🟠 **ALERT: Executable/script files in PR**\n"
+            FINDINGS="$FINDINGS\nThis is a static site — executable files are unexpected:\n"
+            FINDINGS="$FINDINGS\n\`\`\`\n$NEW_EXECUTABLES\n\`\`\`\n"
+            [ "$SEVERITY" != "critical" ] && SEVERITY="alert"
+          fi
+
+          # Check for .env or credential files
+          CRED_FILES=$(echo "$CHANGED_FILES" | grep -iE '(\.env|credential|secret|token|\.pem|\.key|\.p12|\.pfx|id_rsa|id_ed25519)' || true)
+          if [ -n "$CRED_FILES" ]; then
+            FINDINGS="$FINDINGS\n🔴 **CRITICAL: Possible credential/secret files in PR**\n"
+            FINDINGS="$FINDINGS\n\`\`\`\n$CRED_FILES\n\`\`\`\n"
+            SEVERITY="critical"
+          fi
+
+          # ─────────────────────────────────────────────
+          # REPORT
+          # ─────────────────────────────────────────────
+          echo ""
+          echo "=== Scan Complete ==="
+          echo "Severity: $SEVERITY"
+
+          if [ "$SEVERITY" = "clean" ]; then
+            REPORT="## ✅ Clawdbot Monitor — Clean\n\nNo suspicious patterns detected in this PR.\n\n**Files scanned:** $FILE_COUNT"
+          else
+            ICON="⚠️"
+            [ "$SEVERITY" = "critical" ] && ICON="🚨"
+            [ "$SEVERITY" = "alert" ] && ICON="🔶"
+
+            REPORT="## $ICON Clawdbot Monitor — $(echo "$SEVERITY" | tr '[:lower:]' '[:upper:]')\n\n"
+            REPORT="$REPORT**Files scanned:** $FILE_COUNT\n"
+            REPORT="$REPORT**Threat level:** $SEVERITY\n\n"
+            REPORT="$REPORT---\n\n"
+            REPORT="$REPORT### Findings\n$FINDINGS\n\n"
+            REPORT="$REPORT---\n\n"
+            REPORT="$REPORT> 🤖 This scan was performed by the Clawdbot Monitor. "
+            REPORT="${REPORT}Review all flagged items before merging. "
+            REPORT="${REPORT}False positives are possible — use your judgment."
+          fi
+
+          # Write report for PR comment step
+          echo -e "$REPORT" > /tmp/scan-report.md
+
+          # Set outputs
+          echo "severity=$SEVERITY" >> "$GITHUB_OUTPUT"
+
+      - name: Comment scan results on PR
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = fs.readFileSync('/tmp/scan-report.md', 'utf8');
+
+            // Find existing bot comment to update (avoid spam)
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(
+              c => c.user.type === 'Bot' && c.body.includes('Clawdbot Monitor')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: report,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: report,
+              });
+            }
+
+      - name: Fail on critical findings
+        if: steps.scan.outputs.severity == 'critical'
+        run: |
+          echo "::error::Clawdbot Monitor found CRITICAL issues. Review the PR comment for details."
+          exit 1
