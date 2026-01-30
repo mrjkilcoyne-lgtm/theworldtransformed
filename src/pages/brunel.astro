@@ -1,0 +1,248 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="The Brunel Engine" description="Turn frustrations into actionable insight through structured interviews">
+  <article class="brunel">
+    <h1>The Brunel Engine</h1>
+    <p class="subtitle">Turn frustrations into actionable insight.</p>
+
+    <section class="overview">
+      <p>
+        A structured interview that generates a private report. You talk to it about your problem.
+        It asks good questions. It generates analysis only you see.
+      </p>
+    </section>
+
+    <section>
+      <h2>How It Works</h2>
+      <div class="flow">
+        <div class="step">
+          <span class="step-number">1</span>
+          <div>
+            <h3>Welcome</h3>
+            <p>Sets expectations. Notes privacy. This works best when you're serious.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-number">2</span>
+          <div>
+            <h3>Interview</h3>
+            <p>Six structured questions about your problem, its impact, what you've tried, your constraints, what solved looks like, and your commitment level.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-number">3</span>
+          <div>
+            <h3>Report</h3>
+            <p>Private analysis with a summary, core issue identification, and three pathways forward: quick win, structural fix, and adaptation.</p>
+          </div>
+        </div>
+        <div class="step">
+          <span class="step-number">4</span>
+          <div>
+            <h3>Follow-up</h3>
+            <p>Optional check-ins at 1 month and 1 year. Track whether things actually changed.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Tiers</h2>
+      <div class="tiers">
+        <div class="tier">
+          <h3>Basic</h3>
+          <span class="price">Free</span>
+          <p>Single model analysis. Clear summary and pathways.</p>
+        </div>
+        <div class="tier">
+          <h3>Standard</h3>
+          <span class="price">10p</span>
+          <p>Enhanced analysis with multiple perspectives. Deeper structural insight.</p>
+        </div>
+        <div class="tier featured">
+          <h3>Council</h3>
+          <span class="price">50p</span>
+          <p>Multi-model synthesis. Analyst, pragmatist, and contrarian views. Strategic consensus.</p>
+        </div>
+      </div>
+      <p class="pricing-note">Prices cover API costs only. No profit.</p>
+    </section>
+
+    <section>
+      <h2>Why This Design</h2>
+      <dl>
+        <dt>Private reports</dt>
+        <dd>No one sees this but you. No social pressure. No performance. Just you and the analysis.</dd>
+
+        <dt>Seriousness calibration</dt>
+        <dd>The commitment question isn't gatekeeping&mdash;it's calibration. Venting is valid. Acting requires different advice than exploring.</dd>
+
+        <dt>Long follow-up</dt>
+        <dd>1 month and 1 year check-ins create actual data on what works. Most tools never follow up.</dd>
+      </dl>
+    </section>
+
+    <section class="cta">
+      <p class="coming-soon">Coming soon.</p>
+      <p>
+        The Brunel Engine is under active development.
+        Follow <a href="https://twitter.com/MattKilcoyne" target="_blank" rel="noopener noreferrer">@MattKilcoyne</a> for updates.
+      </p>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .brunel {
+    padding: 2rem 0;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    color: #58a6ff;
+  }
+
+  .subtitle {
+    font-size: 1.25rem;
+    color: #8b949e;
+    margin-bottom: 2rem;
+  }
+
+  .overview {
+    font-size: 1.125rem;
+    line-height: 1.8;
+  }
+
+  section {
+    margin: 3rem 0;
+  }
+
+  h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    color: #c9d1d9;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+    color: #58a6ff;
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    line-height: 1.7;
+  }
+
+  a {
+    color: #58a6ff;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .step {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #161b22;
+    border: 1px solid #30363d;
+    color: #58a6ff;
+    font-weight: 600;
+    font-size: 0.875rem;
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+
+  .tiers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .tier {
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 1.5rem;
+    background: #161b22;
+  }
+
+  .tier.featured {
+    border-color: #58a6ff;
+  }
+
+  .price {
+    display: inline-block;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin: 0.5rem 0;
+  }
+
+  .pricing-note {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    color: #8b949e;
+  }
+
+  dl {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  dt {
+    font-weight: 600;
+    color: #c9d1d9;
+  }
+
+  dd {
+    margin: 0.25rem 0 0 0;
+    color: #8b949e;
+    line-height: 1.7;
+  }
+
+  .cta {
+    text-align: center;
+    padding: 2rem;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    background: #161b22;
+  }
+
+  .coming-soon {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #58a6ff;
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 2rem;
+    }
+
+    .tiers {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
