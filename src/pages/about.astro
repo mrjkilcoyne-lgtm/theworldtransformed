@@ -1,0 +1,119 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="About" description="Matt Kilcoyne - Policy analyst, economist, and builder of coordination infrastructure">
+  <article class="about">
+    <h1>About</h1>
+
+    <section>
+      <p>
+        Matt Kilcoyne. Policy analyst at the
+        <a href="https://datainnovation.org" target="_blank" rel="noopener noreferrer">Center for Data Innovation</a>
+        and <a href="https://itif.org" target="_blank" rel="noopener noreferrer">ITIF</a>.
+        Based in London.
+      </p>
+      <p>
+        I work at the intersection of economics, technology policy, and coordination mechanisms.
+        My focus is on how institutions shape outcomes, how technology changes what's possible,
+        and how we build infrastructure for collective action without capture.
+      </p>
+    </section>
+
+    <section>
+      <h2>Background</h2>
+      <p>
+        Previously at the Adam Smith Institute and the Open Data Institute.
+        My policy work has contributed to UK government decisions on trade, regulation, and
+        digital infrastructure.
+      </p>
+      <p>
+        Current research areas include the economics of AI governance,
+        European digital sovereignty critique, and formalizing LLMs as navigation tools
+        through possibility space (the Babel Navigation Theorem).
+      </p>
+    </section>
+
+    <section>
+      <h2>Approach</h2>
+      <ul>
+        <li><strong>Follow the money</strong> &mdash; Track distributional effects and rent-seeking to understand policy</li>
+        <li><strong>Navigation beats prediction</strong> &mdash; Explore possibility space rather than forecast complex systems</li>
+        <li><strong>Build coordination infrastructure</strong> &mdash; Enable collective action without capture</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Projects</h2>
+      <p>
+        <a href="/brunel">The Brunel Engine</a> &mdash; A structured interview tool that generates private reports
+        to help users turn frustrations into actionable insights. The entry point to a broader
+        ecosystem of coordination tools.
+      </p>
+    </section>
+
+    <section>
+      <h2>Contact</h2>
+      <ul class="contact-list">
+        <li><a href="https://twitter.com/MattKilcoyne" target="_blank" rel="noopener noreferrer">Twitter/X: @MattKilcoyne</a></li>
+        <li><a href="https://datainnovation.org/author/mkilcoyne/" target="_blank" rel="noopener noreferrer">Professional work at CDI</a></li>
+      </ul>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .about {
+    padding: 2rem 0;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #58a6ff;
+  }
+
+  section {
+    margin: 2.5rem 0;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: #c9d1d9;
+  }
+
+  p {
+    margin: 1rem 0;
+    line-height: 1.8;
+  }
+
+  a {
+    color: #58a6ff;
+    text-decoration: none;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+
+  ul {
+    margin-left: 1.5rem;
+    line-height: 1.8;
+  }
+
+  li {
+    margin: 0.5rem 0;
+  }
+
+  .contact-list {
+    list-style: none;
+    margin-left: 0;
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 2rem;
+    }
+  }
+</style>

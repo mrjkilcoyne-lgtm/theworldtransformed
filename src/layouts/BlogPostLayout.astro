@@ -1,0 +1,191 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  date: Date;
+  tags?: string[];
+}
+
+const { title, description, date, tags = [] } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="blog-post">
+    <header>
+      <h1>{title}</h1>
+      <div class="meta">
+        <time datetime={date.toISOString()}>
+          {date.toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+          })}
+        </time>
+        {tags.length > 0 && (
+          <div class="tags">
+            {tags.map((tag) => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
+    </header>
+
+    <div class="content">
+      <slot />
+    </div>
+
+    <footer>
+      <a href="/blog">&larr; Back to Writing</a>
+    </footer>
+  </article>
+</BaseLayout>
+
+<style>
+  .blog-post {
+    padding: 2rem 0;
+  }
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #58a6ff;
+    line-height: 1.2;
+  }
+
+  .meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+
+  time {
+    font-size: 0.875rem;
+    color: #8b949e;
+  }
+
+  .tags {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    color: #8b949e;
+  }
+
+  .content {
+    line-height: 1.8;
+    font-size: 1.0625rem;
+  }
+
+  .content :global(h2) {
+    font-size: 1.75rem;
+    margin: 2.5rem 0 1rem;
+    color: #c9d1d9;
+  }
+
+  .content :global(h3) {
+    font-size: 1.375rem;
+    margin: 2rem 0 0.75rem;
+    color: #c9d1d9;
+  }
+
+  .content :global(p) {
+    margin: 1rem 0;
+    color: #c9d1d9;
+  }
+
+  .content :global(ul),
+  .content :global(ol) {
+    margin: 1rem 0 1rem 1.5rem;
+    line-height: 1.8;
+  }
+
+  .content :global(li) {
+    margin: 0.5rem 0;
+  }
+
+  .content :global(a) {
+    color: #58a6ff;
+    text-decoration: none;
+  }
+
+  .content :global(a:hover) {
+    text-decoration: underline;
+  }
+
+  .content :global(blockquote) {
+    border-left: 3px solid #30363d;
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    color: #8b949e;
+    font-style: italic;
+  }
+
+  .content :global(code) {
+    background: #161b22;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+
+  .content :global(pre) {
+    background: #161b22;
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+    border: 1px solid #30363d;
+  }
+
+  .content :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+
+  .content :global(hr) {
+    border: none;
+    border-top: 1px solid #30363d;
+    margin: 2rem 0;
+  }
+
+  .content :global(strong) {
+    color: #c9d1d9;
+  }
+
+  .content :global(em) {
+    color: #8b949e;
+  }
+
+  footer {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #30363d;
+  }
+
+  footer a {
+    color: #58a6ff;
+    text-decoration: none;
+    font-size: 0.9375rem;
+  }
+
+  footer a:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 640px) {
+    h1 {
+      font-size: 2rem;
+    }
+  }
+</style>

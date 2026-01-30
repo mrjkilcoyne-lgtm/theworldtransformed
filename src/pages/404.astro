@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Not Found" description="Page not found">
+  <article class="not-found">
+    <h1>404</h1>
+    <p>Page not found. The possibility space doesn't extend here.</p>
+    <a href="/">Navigate home</a>
+  </article>
+</BaseLayout>
+
+<style>
+  .not-found {
+    text-align: center;
+    padding: 4rem 0;
+  }
+
+  h1 {
+    font-size: 4rem;
+    color: #58a6ff;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.25rem;
+    color: #8b949e;
+    margin-bottom: 2rem;
+  }
+
+  a {
+    color: #58a6ff;
+    text-decoration: none;
+    font-size: 1.125rem;
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
+</style>
