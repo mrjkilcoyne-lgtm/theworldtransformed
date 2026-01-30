@@ -83,8 +83,9 @@ The Brunel Engine is now live on this site at `/brunel`. It features:
 **Try it:** Visit `/brunel` on the live site
 
 **Documentation:**
-- [Setup Guide](./BRUNEL_SETUP.md) - Technical implementation details
-- [Deployment Guide](./DEPLOY.md) - How to deploy to production
+- [Setup Guide](./docs/brunel/BRUNEL_SETUP.md) - Technical implementation details
+- [Deployment Guide](./docs/guides/DEPLOY.md) - How to deploy to production
+- [All Documentation](./docs/) - Complete documentation index
 
 ---
 
@@ -118,7 +119,7 @@ npm run preview
 ./deploy.sh
 ```
 
-Or see [DEPLOY.md](./DEPLOY.md) for detailed deployment options (Vercel, Netlify, self-hosted).
+Or see [DEPLOY.md](./docs/guides/DEPLOY.md) for detailed deployment options (Vercel, Netlify, self-hosted).
 
 ### Development Workflow
 
@@ -140,7 +141,7 @@ npm run check             # Run all checks
 
 ### Project Structure
 
-See [CLAUDE.md](./CLAUDE.md) for detailed project documentation, including:
+See [CLAUDE.md](./docs/architecture/CLAUDE.md) for detailed project documentation, including:
 - Architecture and conventions
 - Development patterns
 - Common workflows
